@@ -5,9 +5,9 @@ const context = canvas.getContext('2d');
 const paddleWidth = 10;
 const paddleHeight = 100;
 
-// Player 1 (left side) settings
+// Player 1 (left) settings
 let player1 = {
-    x: 0, // Left side
+    x: 0,
     y: canvas.height / 2 - paddleHeight / 2,
     width: paddleWidth,
     height: paddleHeight,
@@ -15,9 +15,9 @@ let player1 = {
     score: 0
 };
 
-// Player 2 (right side) settings
+// Player 2 (right) settings
 let player2 = {
-    x: canvas.width - paddleWidth, // Right side
+    x: canvas.width - paddleWidth,
     y: canvas.height / 2 - paddleHeight / 2,
     width: paddleWidth,
     height: paddleHeight,
@@ -68,7 +68,7 @@ function update() {
         player1.y += 8;
     }
 
-    // Move Player 2 (Up and Down arrow keys)
+    // Move Player 2 (Arrow Up and Down controls)
     if (upPressed && player2.y > 0) {
         player2.y -= 8;
     }
@@ -93,10 +93,10 @@ function update() {
 
     // Reset the ball if it goes out of bounds
     if (ball.x - ball.radius < 0) {
-        player2.score++; // Player 2 scores
+        player2.score++;
         resetBall();
     } else if (ball.x + ball.radius > canvas.width) {
-        player1.score++; // Player 1 scores
+        player1.score++;
         resetBall();
     }
 }
@@ -138,11 +138,9 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Player 1 controls (W and S keys)
+// Variables to track keypresses
 let wPressed = false;
 let sPressed = false;
-
-// Player 2 controls (Up and Down arrow keys)
 let upPressed = false;
 let downPressed = false;
 
