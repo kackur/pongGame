@@ -5,7 +5,7 @@ const context = canvas.getContext('2d');
 const paddleWidth = 10;
 const paddleHeight = 100;
 
-// Player 1 controls (left side, W/S)
+// Player 1 (left side) settings
 let player1 = {
     x: 0, // Left side
     y: canvas.height / 2 - paddleHeight / 2,
@@ -15,7 +15,7 @@ let player1 = {
     score: 0
 };
 
-// Player 2 controls (right side, Up/Down Arrows)
+// Player 2 (right side) settings
 let player2 = {
     x: canvas.width - paddleWidth, // Right side
     y: canvas.height / 2 - paddleHeight / 2,
@@ -36,13 +36,13 @@ const ball = {
     color: 'white'
 };
 
-// Draw the rectangle (paddles)
+// Function to draw paddles (rectangles)
 function drawRect(x, y, width, height, color) {
     context.fillStyle = color;
     context.fillRect(x, y, width, height);
 }
 
-// Draw the circle (ball)
+// Function to draw the ball (circle)
 function drawCircle(x, y, radius, color) {
     context.fillStyle = color;
     context.beginPath();
@@ -51,16 +51,16 @@ function drawCircle(x, y, radius, color) {
     context.fill();
 }
 
-// Draw text (scores)
+// Function to draw text (score)
 function drawText(text, x, y, color) {
     context.fillStyle = color;
     context.font = '35px Arial';
     context.fillText(text, x, y);
 }
 
-// Update the game state (movement, collisions)
+// Update game state (ball movement, paddle movement)
 function update() {
-    // Move Player 1 paddle (W/S controls)
+    // Move Player 1 (W and S controls)
     if (wPressed && player1.y > 0) {
         player1.y -= 8;
     }
@@ -68,7 +68,7 @@ function update() {
         player1.y += 8;
     }
 
-    // Move Player 2 paddle (Arrow Up/Down controls)
+    // Move Player 2 (Up and Down arrow keys)
     if (upPressed && player2.y > 0) {
         player2.y -= 8;
     }
@@ -93,10 +93,10 @@ function update() {
 
     // Reset the ball if it goes out of bounds
     if (ball.x - ball.radius < 0) {
-        player2.score++; // Player 2 scores if ball goes out on Player 1 side
+        player2.score++; // Player 2 scores
         resetBall();
     } else if (ball.x + ball.radius > canvas.width) {
-        player1.score++; // Player 1 scores if ball goes out on Player 2 side
+        player1.score++; // Player 1 scores
         resetBall();
     }
 }
@@ -108,7 +108,7 @@ function resetBall() {
     ball.velocityX = -ball.velocityX;
 }
 
-// Detect collision between ball and paddle
+// Collision detection between ball and paddle
 function collision(ball, paddle) {
     return ball.x - ball.radius < paddle.x + paddle.width &&
            ball.x + ball.radius > paddle.x &&
@@ -118,7 +118,7 @@ function collision(ball, paddle) {
 
 // Draw everything
 function draw() {
-    // Clear canvas (black background)
+    // Clear canvas
     drawRect(0, 0, canvas.width, canvas.height, 'black');
     
     // Draw paddles and ball
@@ -126,9 +126,61 @@ function draw() {
     drawRect(player2.x, player2.y, player2.width, player2.height, player2.color); // Player 2 paddle (right)
     drawCircle(ball.x, ball.y, ball.radius, ball.color); // Ball
 
-    // Draw scores for both players
+    // Draw scores
     drawText(player1.score, canvas.width / 4, canvas.height / 5, 'white'); // Player 1 score
     drawText(player2.score, 3 * canvas.width / 4, canvas.height / 5, 'white'); // Player 2 score
 }
 
-// Game loop (update and​⬤
+// Game loop (update and draw)
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// Player 1 controls (W and S keys)
+let wPressed = false;
+let sPressed = false;
+
+// Player 2 controls (Up and Down arrow keys)
+let upPressed = false;
+let downPressed = false;
+
+// Event listeners for keydown
+document.addEventListener('keydown', (event) => {
+    switch(event.key) {
+        case 'w':
+            wPressed = true;
+            break;
+        case 's':
+            sPressed = true;
+            break;
+        case 'ArrowUp':
+            upPressed = true;
+            break;
+        case 'ArrowDown':
+            downPressed = true;
+            break;
+    }
+});
+
+// Event listeners for keyup
+document.addEventListener('keyup', (event) => {
+    switch(event.key) {
+        case 'w':
+            wPressed = false;
+            break;
+        case 's':
+            sPressed = false;
+            break;
+        case 'ArrowUp':
+            upPressed = false;
+            break;
+        case 'ArrowDown':
+            downPressed = false;
+            break;
+    }
+});
+
+// Start the game loop
+gameLoop();
