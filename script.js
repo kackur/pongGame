@@ -1,11 +1,12 @@
 const canvas = document.getElementById('pong');
 const context = canvas.getContext('2d');
 
-// Create the pong paddle
+// Paddle settings
 const paddleWidth = 10;
 const paddleHeight = 100;
 
-let player = {
+// Player 1 controls
+let player1 = {
     x: 0,
     y: canvas.height / 2 - paddleHeight / 2,
     width: paddleWidth,
@@ -14,7 +15,8 @@ let player = {
     score: 0
 };
 
-let computer = {
+// Player 2 controls
+let player2 = {
     x: canvas.width - paddleWidth,
     y: canvas.height / 2 - paddleHeight / 2,
     width: paddleWidth,
@@ -23,7 +25,7 @@ let computer = {
     score: 0
 };
 
-// Create the pong ball
+// Ball settings
 const ball = {
     x: canvas.width / 2,
     y: canvas.height / 2,
@@ -40,7 +42,7 @@ function drawRect(x, y, width, height, color) {
     context.fillRect(x, y, width, height);
 }
 
-// Draw the circle
+// Draw the circle (ball)
 function drawCircle(x, y, radius, color) {
     context.fillStyle = color;
     context.beginPath();
@@ -49,57 +51,64 @@ function drawCircle(x, y, radius, color) {
     context.fill();
 }
 
-// Draw the text
+// Draw text (score)
 function drawText(text, x, y, color) {
     context.fillStyle = color;
     context.font = '35px Arial';
     context.fillText(text, x, y);
 }
 
-// Update function
+// Update the game
 function update() {
-    // Move the paddle
-    if (upPressed && player.y > 0) {
-        player.y -= 8;
+    // Move Player 1 paddle
+    if (wPressed && player1.y > 0) {
+        player1.y -= 8;
     }
-    if (downPressed && (player.y < canvas.height - player.height)) {
-        player.y += 8;
+    if (sPressed && player1.y < canvas.height - player1.height) {
+        player1.y += 8;
+    }
+
+    // Move Player 2 paddle
+    if (upPressed && player2.y > 0) {
+        player2.y -= 8;
+    }
+    if (downPressed && player2.y < canvas.height - player2.height) {
+        player2.y += 8;
     }
 
     // Move the ball
     ball.x += ball.velocityX;
     ball.y += ball.velocityY;
 
-    // Collision with top and bottom walls
+    // Ball collision with top and bottom walls
     if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
         ball.velocityY = -ball.velocityY;
     }
 
-    // Collision with paddles
-    let paddle = (ball.x < canvas.width / 2) ? player : computer;
+    // Ball collision with paddles
+    let paddle = (ball.x < canvas.width / 2) ? player1 : player2;
     if (collision(ball, paddle)) {
-        // Ball collided with paddle
         ball.velocityX = -ball.velocityX;
     }
 
-    // Reset ball if it goes out of bounds
+    // Reset the ball if it goes out of bounds
     if (ball.x - ball.radius < 0) {
-        computer.score++;
+        player2.score++;
         resetBall();
     } else if (ball.x + ball.radius > canvas.width) {
-        player.score++;
+        player1.score++;
         resetBall();
     }
 }
 
-// Reset the ball
+// Reset the ball position
 function resetBall() {
     ball.x = canvas.width / 2;
     ball.y = canvas.height / 2;
     ball.velocityX = -ball.velocityX;
 }
 
-// Collision detection
+// Collision detection between ball and paddle
 function collision(ball, paddle) {
     return ball.x - ball.radius < paddle.x + paddle.width &&
            ball.x + ball.radius > paddle.x &&
@@ -109,12 +118,12 @@ function collision(ball, paddle) {
 
 // Draw everything
 function draw() {
-    drawRect(0, 0, canvas.width, canvas.height, 'black'); // Clear the canvas
-    drawRect(player.x, player.y, player.width, player.height, player.color); // Draw player paddle
-    drawRect(computer.x, computer.y, computer.width, computer.height, computer.color); // Draw computer paddle
-    drawCircle(ball.x, ball.y, ball.radius, ball.color); // Draw ball
-    drawText(player.score, canvas.width / 4, canvas.height / 5, 'white'); // Draw player score
-    drawText(computer.score, 3 * canvas.width / 4, canvas.height / 5, 'white'); // Draw computer score
+    drawRect(0, 0, canvas.width, canvas.height, 'black'); // Clear canvas
+    drawRect(player1.x, player1.y, player1.width, player1.height, player1.color); // Player 1 paddle
+    drawRect(player2.x, player2.y, player2.width, player2.height, player2.color); // Player 2 paddle
+    drawCircle(ball.x, ball.y, ball.radius, ball.color); // Ball
+    drawText(player1.score, canvas.width / 4, canvas.height / 5, 'white'); // Player 1 score
+    drawText(player2.score, 3 * canvas.width / 4, canvas.height / 5, 'white'); // Player 2 score
 }
 
 // Game loop
@@ -124,25 +133,47 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Control the player paddle
+// Player 1 controls (W and S keys)
+let wPressed = false;
+let sPressed = false;
+
+// Player 2 controls (Up and Down arrow keys)
 let upPressed = false;
 let downPressed = false;
 
+// Keydown event listener
 document.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowUp') {
-        upPressed = true;
-    }
-    if (event.key === 'ArrowDown') {
-        downPressed = true;
+    switch(event.key) {
+        case 'w':
+            wPressed = true;
+            break;
+        case 's':
+            sPressed = true;
+            break;
+        case 'ArrowUp':
+            upPressed = true;
+            break;
+        case 'ArrowDown':
+            downPressed = true;
+            break;
     }
 });
 
+// Keyup event listener
 document.addEventListener('keyup', (event) => {
-    if (event.key === 'ArrowUp') {
-        upPressed = false;
-    }
-    if (event.key === 'ArrowDown') {
-        downPressed = false;
+    switch(event.key) {
+        case 'w':
+            wPressed = false;
+            break;
+        case 's':
+            sPressed = false;
+            break;
+        case 'ArrowUp':
+            upPressed = false;
+            break;
+        case 'ArrowDown':
+            downPressed = false;
+            break;
     }
 });
 
