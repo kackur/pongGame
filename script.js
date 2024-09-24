@@ -5,9 +5,9 @@ const context = canvas.getContext('2d');
 const paddleWidth = 10;
 const paddleHeight = 100;
 
-// Player 1 controls
+// Player 1 controls (left side, W/S)
 let player1 = {
-    x: 0,
+    x: 0, // Left side
     y: canvas.height / 2 - paddleHeight / 2,
     width: paddleWidth,
     height: paddleHeight,
@@ -15,9 +15,9 @@ let player1 = {
     score: 0
 };
 
-// Player 2 controls
+// Player 2 controls (right side, Up/Down Arrows)
 let player2 = {
-    x: canvas.width - paddleWidth,
+    x: canvas.width - paddleWidth, // Right side
     y: canvas.height / 2 - paddleHeight / 2,
     width: paddleWidth,
     height: paddleHeight,
@@ -36,7 +36,7 @@ const ball = {
     color: 'white'
 };
 
-// Draw the rectangle
+// Draw the rectangle (paddles)
 function drawRect(x, y, width, height, color) {
     context.fillStyle = color;
     context.fillRect(x, y, width, height);
@@ -51,16 +51,16 @@ function drawCircle(x, y, radius, color) {
     context.fill();
 }
 
-// Draw text (score)
+// Draw text (scores)
 function drawText(text, x, y, color) {
     context.fillStyle = color;
     context.font = '35px Arial';
     context.fillText(text, x, y);
 }
 
-// Update the game
+// Update the game state (movement, collisions)
 function update() {
-    // Move Player 1 paddle
+    // Move Player 1 paddle (W/S controls)
     if (wPressed && player1.y > 0) {
         player1.y -= 8;
     }
@@ -68,7 +68,7 @@ function update() {
         player1.y += 8;
     }
 
-    // Move Player 2 paddle
+    // Move Player 2 paddle (Arrow Up/Down controls)
     if (upPressed && player2.y > 0) {
         player2.y -= 8;
     }
@@ -93,22 +93,22 @@ function update() {
 
     // Reset the ball if it goes out of bounds
     if (ball.x - ball.radius < 0) {
-        player2.score++;
+        player2.score++; // Player 2 scores if ball goes out on Player 1 side
         resetBall();
     } else if (ball.x + ball.radius > canvas.width) {
-        player1.score++;
+        player1.score++; // Player 1 scores if ball goes out on Player 2 side
         resetBall();
     }
 }
 
-// Reset the ball position
+// Reset ball to center after scoring
 function resetBall() {
     ball.x = canvas.width / 2;
     ball.y = canvas.height / 2;
     ball.velocityX = -ball.velocityX;
 }
 
-// Collision detection between ball and paddle
+// Detect collision between ball and paddle
 function collision(ball, paddle) {
     return ball.x - ball.radius < paddle.x + paddle.width &&
            ball.x + ball.radius > paddle.x &&
@@ -118,64 +118,17 @@ function collision(ball, paddle) {
 
 // Draw everything
 function draw() {
-    drawRect(0, 0, canvas.width, canvas.height, 'black'); // Clear canvas
-    drawRect(player1.x, player1.y, player1.width, player1.height, player1.color); // Player 1 paddle
-    drawRect(player2.x, player2.y, player2.width, player2.height, player2.color); // Player 2 paddle
+    // Clear canvas (black background)
+    drawRect(0, 0, canvas.width, canvas.height, 'black');
+    
+    // Draw paddles and ball
+    drawRect(player1.x, player1.y, player1.width, player1.height, player1.color); // Player 1 paddle (left)
+    drawRect(player2.x, player2.y, player2.width, player2.height, player2.color); // Player 2 paddle (right)
     drawCircle(ball.x, ball.y, ball.radius, ball.color); // Ball
+
+    // Draw scores for both players
     drawText(player1.score, canvas.width / 4, canvas.height / 5, 'white'); // Player 1 score
     drawText(player2.score, 3 * canvas.width / 4, canvas.height / 5, 'white'); // Player 2 score
 }
 
-// Game loop
-function gameLoop() {
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
-}
-
-// Player 1 controls (W and S keys)
-let wPressed = false;
-let sPressed = false;
-
-// Player 2 controls (Up and Down arrow keys)
-let upPressed = false;
-let downPressed = false;
-
-// Keydown event listener
-document.addEventListener('keydown', (event) => {
-    switch(event.key) {
-        case 'w':
-            wPressed = true;
-            break;
-        case 's':
-            sPressed = true;
-            break;
-        case 'ArrowUp':
-            upPressed = true;
-            break;
-        case 'ArrowDown':
-            downPressed = true;
-            break;
-    }
-});
-
-// Keyup event listener
-document.addEventListener('keyup', (event) => {
-    switch(event.key) {
-        case 'w':
-            wPressed = false;
-            break;
-        case 's':
-            sPressed = false;
-            break;
-        case 'ArrowUp':
-            upPressed = false;
-            break;
-        case 'ArrowDown':
-            downPressed = false;
-            break;
-    }
-});
-
-// Start the game loop
-gameLoop();
+// Game loop (update and​⬤
