@@ -26,8 +26,8 @@ let player2 = {
 };
 
 // Ball settings
-let initialBallSpeed = 8; // Starta med högre hastighet
-const ballSpeedIncrement = 1.5; // Öka hastigheten med större steg
+let initialBallSpeed = 15; // Starta med högre hastighet
+const ballSpeedIncrement = 3; // Öka hastigheten med större steg
 const ball = {
     x: canvas.width / 2,
     y: canvas.height / 2,
