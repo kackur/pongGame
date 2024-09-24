@@ -33,8 +33,8 @@ const ball = {
     y: canvas.height / 2,
     radius: 10,
     speed: initialBallSpeed,
-    velocityX: 8, // Starta med högre hastighet
-    velocityY: 8, // Starta med högre hastighet
+    velocityX: 30, // Starta med högre hastighet
+    velocityY: 30, // Starta med högre hastighet
     color: 'white',
     playerHits: 0 // To track the number of hits by both players
 };
