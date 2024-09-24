@@ -26,15 +26,15 @@ let player2 = {
 };
 
 // Ball settings
-let initialBallSpeed = 30; // Starta med högre hastighet
-const ballSpeedIncrement = 10; // Öka hastigheten med större steg
+let initialBallSpeed = 12; // Starta med högre hastighet
+const ballSpeedIncrement = 2; // Öka hastigheten med större steg
 const ball = {
     x: canvas.width / 2,
     y: canvas.height / 2,
     radius: 10,
     speed: initialBallSpeed,
-    velocityX: 30, // Starta med högre hastighet
-    velocityY: 30, // Starta med högre hastighet
+    velocityX: 12, // Starta med högre hastighet
+    velocityY: 12, // Starta med högre hastighet
     color: 'white',
     playerHits: 0 // To track the number of hits by both players
 };
