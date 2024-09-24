@@ -1,51 +1,54 @@
-const canvas = document.getElementById('pong');
-const context = canvas.getContext('2d');
+const canvas = document.getElementById("pongCanvas");
+const context = canvas.getContext("2d");
 
-// Paddle settings
-const paddleWidth = 10;
-const paddleHeight = 100;
+const paddleWidth = 10, paddleHeight = 100;
+const netWidth = 2, netHeight = 10;
+let upArrowPressed = false, downArrowPressed = false;
+let wPressed = false, sPressed = false;
+let leftPlayerScore = 0, rightPlayerScore = 0;
+const winningScore = 10;
+let gameOver = false;
 
-// Player 1 (left) settings
-let player1 = {
+let initialBallSpeed = 12; 
+const ballSpeedIncrement = 2; 
+let ball = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    radius: 10,
+    speed: initialBallSpeed,
+    velocityX: 12, 
+    velocityY: 12, 
+    color: 'white',
+    playerHits: 0
+};
+
+let leftPaddle = {
     x: 0,
     y: canvas.height / 2 - paddleHeight / 2,
     width: paddleWidth,
     height: paddleHeight,
     color: 'white',
-    score: 0
+    score: 0,
+    dy: 8
 };
 
-// Player 2 (right) settings
-let player2 = {
+let rightPaddle = {
     x: canvas.width - paddleWidth,
     y: canvas.height / 2 - paddleHeight / 2,
     width: paddleWidth,
     height: paddleHeight,
     color: 'white',
-    score: 0
+    score: 0,
+    dy: 8
 };
 
-// Ball settings
-let initialBallSpeed = 12; // Starta med högre hastighet
-const ballSpeedIncrement = 2; // Öka hastigheten med större steg
-const ball = {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-    radius: 10,
-    speed: initialBallSpeed,
-    velocityX: 12, // Starta med högre hastighet
-    velocityY: 12, // Starta med högre hastighet
-    color: 'white',
-    playerHits: 0 // To track the number of hits by both players
-};
+const newGameButton = document.getElementById("newGameButton");
 
-// Function to draw paddles (rectangles)
-function drawRect(x, y, width, height, color) {
+function drawRect(x, y, w, h, color) {
     context.fillStyle = color;
-    context.fillRect(x, y, width, height);
+    context.fillRect(x, y, w, h);
 }
 
-// Function to draw the ball (circle)
 function drawCircle(x, y, radius, color) {
     context.fillStyle = color;
     context.beginPath();
@@ -54,197 +57,153 @@ function drawCircle(x, y, radius, color) {
     context.fill();
 }
 
-// Function to draw text (score)
+function drawNet() {
+    for (let i = 0; i <= canvas.height; i += 15) {
+        drawRect(canvas.width / 2 - netWidth / 2, i, netWidth, netHeight, 'white');
+    }
+}
+
 function drawText(text, x, y, color) {
     context.fillStyle = color;
-    context.font = '35px Arial';
+    context.font = "50px sans-serif";
     context.fillText(text, x, y);
 }
 
-// Update game state (ball movement, paddle movement)
-function update() {
-    // Move Player 1 (W and S controls)
-    if (wPressed && player1.y > 0) {
-        player1.y -= 8;
-    }
-    if (sPressed && player1.y < canvas.height - player1.height) {
-        player1.y += 8;
+function movePaddles() {
+    if (wPressed && leftPaddle.y > 0) {
+        leftPaddle.y -= leftPaddle.dy;
+    } else if (sPressed && leftPaddle.y < canvas.height - leftPaddle.height) {
+        leftPaddle.y += leftPaddle.dy;
     }
 
-    // Move Player 2 (Arrow Up and Down controls)
-    if (upPressed && player2.y > 0) {
-        player2.y -= 8;
-    }
-    if (downPressed && player2.y < canvas.height - player2.height) {
-        player2.y += 8;
-    }
-
-    // Move the ball
-    ball.x += ball.velocityX;
-    ball.y += ball.velocityY;
-
-    // Ball collision with top and bottom walls
-    if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
-        ball.velocityY = -ball.velocityY;
-    }
-
-    // Ball collision with paddles
-    let paddle = (ball.x < canvas.width / 2) ? player1 : player2;
-    if (collision(ball, paddle)) {
-        ball.velocityX = -ball.velocityX;
-
-        // Modify ball's Y velocity based on where it hits the paddle
-        let deltaY = ball.y - (paddle.y + paddle.height / 2);
-        deltaY = deltaY / (paddle.height / 2); // Normalize deltaY between -1 and 1
-        ball.velocityY = deltaY * ball.speed; // More dramatic angle changes
-
-        // Increase the number of player hits
-        ball.playerHits += 1;
-
-        // Increase ball speed after both players have hit the ball
-        if (ball.playerHits % 2 === 0) {
-            ball.speed += ballSpeedIncrement;
-            ball.velocityX = ball.velocityX > 0 ? ball.speed : -ball.speed;
-            ball.velocityY = ball.velocityY > 0 ? ball.speed : -ball.speed;
-        }
-    }
-
-    // Reset the ball if it goes out of bounds
-    if (ball.x - ball.radius < 0) {
-        player2.score++;
-        if (player2.score === 10) {
-            endGame("Player 2 Wins!");
-        } else {
-            resetBall();
-        }
-    } else if (ball.x + ball.radius > canvas.width) {
-        player1.score++;
-        if (player1.score === 10) {
-            endGame("Player 1 Wins!");
-        } else {
-            resetBall();
-        }
+    if (upArrowPressed && rightPaddle.y > 0) {
+        rightPaddle.y -= rightPaddle.dy;
+    } else if (downArrowPressed && rightPaddle.y < canvas.height - rightPaddle.height) {
+        rightPaddle.y += rightPaddle.dy;
     }
 }
 
-// Reset ball to center after scoring
 function resetBall() {
     ball.x = canvas.width / 2;
     ball.y = canvas.height / 2;
     ball.speed = initialBallSpeed;
-    ball.velocityX = -ball.velocityX;
-    ball.velocityY = ball.speed;
-    ball.playerHits = 0; // Reset hit count
+    ball.velocityX = ball.speed * (Math.random() > 0.5 ? 1 : -1);
+    ball.velocityY = ball.speed * (Math.random() > 0.5 ? 1 : -1);
 }
 
-// End the game and display "New Match" button
-function endGame(winnerText) {
-    // Stop game loop
-    cancelAnimationFrame(gameLoopId);
-    
-    // Display winner and "New Match" button
-    drawText(winnerText, canvas.width / 2 - 100, canvas.height / 2, 'white');
-    
-    // Create "New Match" button
-    const button = document.createElement('button');
-    button.innerText = "Ny match";
-    button.style.position = 'absolute';
-    button.style.top = '50%';
-    button.style.left = '50%';
-    button.style.transform = 'translate(-50%, -50%)';
-    button.style.padding = '10px 20px';
-    button.style.fontSize = '20px';
-    button.style.backgroundColor = 'white';
-    button.style.color = 'black';
-    button.onclick = () => {
-        // Reset scores and ball speed
-        player1.score = 0;
-        player2.score = 0;
-        ball.speed = initialBallSpeed;
+function updateBall() {
+    ball.x += ball.velocityX;
+    ball.y += ball.velocityY;
+
+    // Kollisionsdetektering mot kanterna
+    if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+        ball.velocityY = -ball.velocityY;
+    }
+
+    // Kollisionsdetektering med paddlar
+    let paddle = (ball.x < canvas.width / 2) ? leftPaddle : rightPaddle;
+
+    if (collision(ball, paddle)) {
+        ball.velocityX = -ball.velocityX;
+
+        let deltaY = ball.y - (paddle.y + paddle.height / 2);
+        deltaY = deltaY / (paddle.height / 2);
+        ball.velocityY = deltaY * ball.speed;
+
+        ball.speed += ballSpeedIncrement;
+        ball.velocityX = ball.velocityX > 0 ? ball.speed : -ball.speed;
+        ball.velocityY = ball.velocityY > 0 ? Math.abs(ball.velocityY) : -Math.abs(ball.velocityY);
+    }
+
+    // Poängräkning
+    if (ball.x - ball.radius < 0) {
+        rightPaddle.score++;
         resetBall();
-
-        // Remove the button
-        document.body.removeChild(button);
-        
-        // Restart the game loop
-        gameLoopId = requestAnimationFrame(gameLoop);
-    };
-    
-    document.body.appendChild(button);
+        checkGameOver();
+    } else if (ball.x + ball.radius > canvas.width) {
+        leftPaddle.score++;
+        resetBall();
+        checkGameOver();
+    }
 }
 
-// Collision detection between ball and paddle
 function collision(ball, paddle) {
-    return ball.x - ball.radius < paddle.x + paddle.width &&
+    return ball.x < paddle.x + paddle.width &&
            ball.x + ball.radius > paddle.x &&
-           ball.y - ball.radius < paddle.y + paddle.height &&
+           ball.y < paddle.y + paddle.height &&
            ball.y + ball.radius > paddle.y;
 }
 
-// Draw everything
+function checkGameOver() {
+    if (leftPaddle.score === winningScore || rightPaddle.score === winningScore) {
+        gameOver = true;
+        newGameButton.style.display = 'block';
+    }
+}
+
+function resetGame() {
+    leftPaddle.score = 0;
+    rightPaddle.score = 0;
+    gameOver = false;
+    newGameButton.style.display = 'none';
+    resetBall();
+}
+
 function draw() {
-    // Clear canvas
     drawRect(0, 0, canvas.width, canvas.height, 'black');
-    
-    // Draw paddles and ball
-    drawRect(player1.x, player1.y, player1.width, player1.height, player1.color); // Player 1 paddle (left)
-    drawRect(player2.x, player2.y, player2.width, player2.height, player2.color); // Player 2 paddle (right)
-    drawCircle(ball.x, ball.y, ball.radius, ball.color); // Ball
+    drawNet();
+    drawText(leftPaddle.score, canvas.width / 4, canvas.height / 5, 'white');
+    drawText(rightPaddle.score, 3 * canvas.width / 4, canvas.height / 5, 'white');
 
-    // Draw scores
-    drawText(player1.score, canvas.width / 4, canvas.height / 5, 'white'); // Player 1 score
-    drawText(player2.score, 3 * canvas.width / 4, canvas.height / 5, 'white'); // Player 2 score
+    if (!gameOver) {
+        drawRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height, leftPaddle.color);
+        drawRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height, rightPaddle.color);
+        drawCircle(ball.x, ball.y, ball.radius, ball.color);
+    }
 }
 
-// Game loop (update and draw)
-let gameLoopId;
 function gameLoop() {
-    update();
+    if (!gameOver) {
+        movePaddles();
+        updateBall();
+    }
     draw();
-    gameLoopId = requestAnimationFrame(gameLoop);
 }
 
-// Variables to track keypresses
-let wPressed = false;
-let sPressed = false;
-let upPressed = false;
-let downPressed = false;
+newGameButton.addEventListener('click', resetGame);
 
-// Event listeners for keydown
-document.addEventListener('keydown', (event) => {
-    switch(event.key) {
+window.addEventListener('keydown', function (event) {
+    switch (event.key) {
+        case 'ArrowUp':
+            upArrowPressed = true;
+            break;
+        case 'ArrowDown':
+            downArrowPressed = true;
+            break;
         case 'w':
             wPressed = true;
             break;
         case 's':
             sPressed = true;
             break;
-        case 'ArrowUp':
-            upPressed = true;
-            break;
-        case 'ArrowDown':
-            downPressed = true;
-            break;
     }
 });
 
-// Event listeners for keyup
-document.addEventListener('keyup', (event) => {
-    switch(event.key) {
+window.addEventListener('keyup', function (event) {
+    switch (event.key) {
+        case 'ArrowUp':
+            upArrowPressed = false;
+            break;
+        case 'ArrowDown':
+            downArrowPressed = false;
+            break;
         case 'w':
             wPressed = false;
             break;
         case 's':
             sPressed = false;
             break;
-        case 'ArrowUp':
-            upPressed = false;
-            break;
-        case 'ArrowDown':
-            downPressed = false;
-            break;
     }
 });
 
-// Start the game loop
-gameLoop();
+setInterval(gameLoop, 1000 / 60);
