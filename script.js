@@ -26,14 +26,15 @@ let player2 = {
 };
 
 // Ball settings
-let initialBallSpeed = 4;
+let initialBallSpeed = 8; // Starta med högre hastighet
+const ballSpeedIncrement = 1.5; // Öka hastigheten med större steg
 const ball = {
     x: canvas.width / 2,
     y: canvas.height / 2,
     radius: 10,
     speed: initialBallSpeed,
-    velocityX: 4,
-    velocityY: 4,
+    velocityX: 8, // Starta med högre hastighet
+    velocityY: 8, // Starta med högre hastighet
     color: 'white',
     playerHits: 0 // To track the number of hits by both players
 };
@@ -92,12 +93,17 @@ function update() {
     if (collision(ball, paddle)) {
         ball.velocityX = -ball.velocityX;
 
+        // Modify ball's Y velocity based on where it hits the paddle
+        let deltaY = ball.y - (paddle.y + paddle.height / 2);
+        deltaY = deltaY / (paddle.height / 2); // Normalize deltaY between -1 and 1
+        ball.velocityY = deltaY * ball.speed; // More dramatic angle changes
+
         // Increase the number of player hits
         ball.playerHits += 1;
 
         // Increase ball speed after both players have hit the ball
         if (ball.playerHits % 2 === 0) {
-            ball.speed += 0.5;
+            ball.speed += ballSpeedIncrement;
             ball.velocityX = ball.velocityX > 0 ? ball.speed : -ball.speed;
             ball.velocityY = ball.velocityY > 0 ? ball.speed : -ball.speed;
         }
