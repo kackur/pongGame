@@ -26,14 +26,16 @@ let player2 = {
 };
 
 // Ball settings
+let initialBallSpeed = 4;
 const ball = {
     x: canvas.width / 2,
     y: canvas.height / 2,
     radius: 10,
-    speed: 4,
+    speed: initialBallSpeed,
     velocityX: 4,
     velocityY: 4,
-    color: 'white'
+    color: 'white',
+    playerHits: 0 // To track the number of hits by both players
 };
 
 // Function to draw paddles (rectangles)
@@ -89,15 +91,33 @@ function update() {
     let paddle = (ball.x < canvas.width / 2) ? player1 : player2;
     if (collision(ball, paddle)) {
         ball.velocityX = -ball.velocityX;
+
+        // Increase the number of player hits
+        ball.playerHits += 1;
+
+        // Increase ball speed after both players have hit the ball
+        if (ball.playerHits % 2 === 0) {
+            ball.speed += 0.5;
+            ball.velocityX = ball.velocityX > 0 ? ball.speed : -ball.speed;
+            ball.velocityY = ball.velocityY > 0 ? ball.speed : -ball.speed;
+        }
     }
 
     // Reset the ball if it goes out of bounds
     if (ball.x - ball.radius < 0) {
         player2.score++;
-        resetBall();
+        if (player2.score === 10) {
+            endGame("Player 2 Wins!");
+        } else {
+            resetBall();
+        }
     } else if (ball.x + ball.radius > canvas.width) {
         player1.score++;
-        resetBall();
+        if (player1.score === 10) {
+            endGame("Player 1 Wins!");
+        } else {
+            resetBall();
+        }
     }
 }
 
@@ -105,7 +125,46 @@ function update() {
 function resetBall() {
     ball.x = canvas.width / 2;
     ball.y = canvas.height / 2;
+    ball.speed = initialBallSpeed;
     ball.velocityX = -ball.velocityX;
+    ball.velocityY = ball.speed;
+    ball.playerHits = 0; // Reset hit count
+}
+
+// End the game and display "New Match" button
+function endGame(winnerText) {
+    // Stop game loop
+    cancelAnimationFrame(gameLoopId);
+    
+    // Display winner and "New Match" button
+    drawText(winnerText, canvas.width / 2 - 100, canvas.height / 2, 'white');
+    
+    // Create "New Match" button
+    const button = document.createElement('button');
+    button.innerText = "Ny match";
+    button.style.position = 'absolute';
+    button.style.top = '50%';
+    button.style.left = '50%';
+    button.style.transform = 'translate(-50%, -50%)';
+    button.style.padding = '10px 20px';
+    button.style.fontSize = '20px';
+    button.style.backgroundColor = 'white';
+    button.style.color = 'black';
+    button.onclick = () => {
+        // Reset scores and ball speed
+        player1.score = 0;
+        player2.score = 0;
+        ball.speed = initialBallSpeed;
+        resetBall();
+
+        // Remove the button
+        document.body.removeChild(button);
+        
+        // Restart the game loop
+        gameLoopId = requestAnimationFrame(gameLoop);
+    };
+    
+    document.body.appendChild(button);
 }
 
 // Collision detection between ball and paddle
@@ -132,10 +191,11 @@ function draw() {
 }
 
 // Game loop (update and draw)
+let gameLoopId;
 function gameLoop() {
     update();
     draw();
-    requestAnimationFrame(gameLoop);
+    gameLoopId = requestAnimationFrame(gameLoop);
 }
 
 // Variables to track keypresses
